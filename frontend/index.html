@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Explainer - AI-Powered Code Analysis</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Monaco Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Пользовательские стили -->
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .code-editor {
+            min-height: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .explanation-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Навигация -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-code text-2xl text-indigo-600 mr-3"></i>
+                        <h1 class="text-xl font-bold text-gray-900">Code Explainer</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-900 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-indigo-600">
+                        <i class="fas fa-home mr-1"></i> Home
+                    </a>
+                    <a href="history.html" class="text-gray-500 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hover:border-b-2 hover:border-indigo-600">
+                        <i class="fas fa-history mr-1"></i> History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Хиро-блок -->
+    <div class="gradient-bg text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h2 class="text-4xl font-bold mb-4">Understand Code Like Never Before</h2>
+                <p class="text-xl mb-8 text-gray-200">Get AI-powered explanations for any code snippet in seconds</p>
+                <div class="flex justify-center space-x-4 text-sm">
+                    <span class="glass-effect px-4 py-2 rounded-full">
+                        <i class="fas fa-robot mr-2"></i>AI-Powered
+                    </span>
+                    <span class="glass-effect px-4 py-2 rounded-full">
+                        <i class="fas fa-code mr-2"></i>14+ Languages
+                    </span>
+                    <span class="glass-effect px-4 py-2 rounded-full">
+                        <i class="fas fa-graduation-cap mr-2"></i>3 Difficulty Levels
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Блок ввода кода -->
+            <div class="bg-white rounded-lg shadow-lg p-6 hover-lift">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900">
+                        <i class="fas fa-edit mr-2 text-indigo-600"></i>Your Code
+                    </h3>
+                    <div class="flex space-x-2">
+                        <button id="clearCode" class="text-gray-500 hover:text-red-600 p-2 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button id="loadExample" class="text-indigo-600 hover:text-indigo-800 p-2 rounded-lg hover:bg-indigo-50">
+                            <i class="fas fa-lightbulb"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Выбор языка и сложности -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="languageSelect" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-code mr-1"></i>Language
+                        </label>
+                        <select id="languageSelect" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="auto">Auto-detect</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="complexitySelect" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-layer-group mr-1"></i>Complexity
+                        </label>
+                        <select id="complexitySelect" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <option value="beginner">🌱 Beginner</option>
+                            <option value="intermediate" selected>🎯 Intermediate</option>
+                            <option value="advanced">🚀 Advanced</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Редактор кода -->
+                <div id="codeEditor" class="code-editor border border-gray-300 rounded-lg"></div>
+                
+                <!-- Кнопка отправки -->
+                <div class="mt-6">
+                    <button id="explainButton" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
+                        <i class="fas fa-magic mr-2"></i>Explain Code
+                    </button>
+                </div>
+            </div>
+
+            <!-- Блок объяснения -->
+            <div class="bg-white rounded-lg shadow-lg p-6 hover-lift">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900">
+                        <i class="fas fa-brain mr-2 text-green-600"></i>AI Explanation
+                    </h3>
+                    <div class="flex space-x-2">
+                        <button id="copyExplanation" class="text-gray-500 hover:text-indigo-600 p-2 rounded-lg hover:bg-gray-100" disabled>
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button id="saveExplanation" class="text-gray-500 hover:text-green-600 p-2 rounded-lg hover:bg-gray-100" disabled>
+                            <i class="fas fa-bookmark"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Состояние загрузки -->
+                <div id="loadingState" class="hidden text-center py-12">
+                    <div class="loading-spinner text-4xl text-indigo-600 mb-4">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <p class="text-gray-600">Analyzing your code with AI...</p>
+                </div>
+                
+                <!-- Область с объяснением -->
+                <div id="explanationContent" class="explanation-container">
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-robot text-6xl mb-4"></i>
+                        <p class="text-lg">Submit your code to get an AI-powered explanation</p>
+                        <p class="text-sm mt-2">The explanation will appear here with detailed analysis</p>
+                    </div>
+                </div>
+                
+                <!-- Статистика объяснения -->
+                <div id="explanationStats" class="hidden mt-6 p-4 bg-gray-50 rounded-lg">
+                    <div class="grid grid-cols-3 gap-4 text-center text-sm text-gray-600">
+                        <div>
+                            <div class="font-semibold text-indigo-600" id="processingTime">-</div>
+                            <div>Processing Time</div>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-green-600" id="languageDetected">-</div>
+                            <div>Language</div>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-purple-600" id="codeComplexity">-</div>
+                            <div>Complexity</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция преимуществ -->
+        <div class="mt-16">
+            <h3 class="text-3xl font-bold text-center text-gray-900 mb-12">Why Choose Code Explainer?</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center p-6 bg-white rounded-lg shadow-lg hover-lift">
+                    <div class="text-4xl text-indigo-600 mb-4">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold mb-2">Instant Understanding</h4>
+                    <p class="text-gray-600">Get comprehensive code explanations in seconds, not hours of research</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-lg shadow-lg hover-lift">
+                    <div class="text-4xl text-green-600 mb-4">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold mb-2">Learn & Grow</h4>
+                    <p class="text-gray-600">Improve your coding skills with detailed explanations and best practices</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-lg shadow-lg hover-lift">
+                    <div class="text-4xl text-purple-600 mb-4">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold mb-2">Save & Review</h4>
+                    <p class="text-gray-600">Keep a history of your explanations and review them anytime</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подвал -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2024 Code Explainer. Empowering developers with AI-powered code understanding.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="main.js"></script>
+</body>
+</html>
