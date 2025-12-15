@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  code-explainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: code-explainer-app
+    ports:
+      - "8000:8000"
+    volumes:
+      # Сохраняем базу данных на хосте для персистентности
+      - ./backend/data:/app/backend/data
+      # Можете раскомментировать для разработки с hot-reload
+      # - ./backend:/app/backend
+      # - ./frontend:/app/frontend
+    environment:
+      - USE_MOCK_LLM=false
+      - DATABASE_DIR=/app/backend/data
+      # Раскомментируйте для использования реального LLM API
+      # - USE_MOCK_LLM=false
+      # - HUGGINGFACE_API_KEY=your_api_key_here
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

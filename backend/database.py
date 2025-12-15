@@ -5,7 +5,9 @@ from datetime import datetime
 import os
 
 # Создаём каталог для базы данных, если его нет
-db_dir = os.path.dirname(os.path.abspath(__file__))
+# Поддержка переменной окружения для Docker
+db_dir = os.getenv('DATABASE_DIR', os.path.dirname(os.path.abspath(__file__)))
+os.makedirs(db_dir, exist_ok=True)
 db_path = os.path.join(db_dir, 'code_explainer.db')
 
 # Настройка базы данных
